@@ -2,6 +2,8 @@
 #include <ESP8266WiFi.h>
 #include <WiFiManager.h>
 
+#define NAME "schotterzwerg"
+
 #define NOUTPUTS (sizeof(outputs)/sizeof(*outputs))
 static int outputs[] = { D7, D6, D2, D1 };
 
@@ -35,14 +37,16 @@ static void set_ota_name() {
   char buffer[256];
 
   WiFi.macAddress(mac);
-  String hostname = "schotterzwerg-";
-  hostname += String(mac[2], HEX) + String(mac[1], HEX) + String(mac[0], HEX);
+  String hostname = NAME "-";
+  hostname += String(mac[3], HEX) + "-" + String(mac[4], HEX) + "-" + String(mac[5], HEX);
   hostname.toCharArray(buffer, sizeof(buffer));
   ArduinoOTA.setHostname(buffer);
 }
 
 void handleRoot() {
-  String message = "NOUTPUTS = " + String(NOUTPUTS) + "\n";
+  String message = "This is " NAME "\n";
+  message += "MAC address: " + String(WiFi.macAddress()) + "\n";
+  message += "NOUTPUTS = " + String(NOUTPUTS) + "\n";
   message += "NASPECTS = " + String(NASPECTS) + "\n";
   webserver.send(200, "text/plain", message);
 }
