@@ -35,7 +35,7 @@ static void set_ota_name() {
   char buffer[256];
 
   WiFi.macAddress(mac);
-  String hostname = "cycle-four-outputs-";
+  String hostname = "schotterzwerg-";
   hostname += String(mac[2], HEX) + String(mac[1], HEX) + String(mac[0], HEX);
   hostname.toCharArray(buffer, sizeof(buffer));
   ArduinoOTA.setHostname(buffer);
