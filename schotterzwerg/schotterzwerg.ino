@@ -1,6 +1,9 @@
 #include <ArduinoOTA.h>
 #include <ESP8266WiFi.h>
 #include <WiFiManager.h>
+#include <Ticker.h>
+
+Ticker tickStep;
 
 #define NAME "schotterzwerg"
 
@@ -65,6 +68,18 @@ void handleNotFound(){
   }
   webserver.send(404, "text/plain", message);
 }
+
+
+static void step() {
+  static int aspect = 0;
+
+  for (int i=NOUTPUTS; i--; ) {
+    digitalWrite(outputs[i], aspects[aspect][i]);
+  }
+  aspect = (aspect + 1) % NASPECTS;
+}
+
+
 void setup() {
   all_off();
   pinMode(D4, OUTPUT);
@@ -105,26 +120,19 @@ void setup() {
   webserver.onNotFound(handleNotFound);
   webserver.begin();
   
+  tickStep.attach(10.0, step);
+
   Serial.println("Ready");
   Serial.println(NASPECTS);
 }
 
-static void step() {
-  static int aspect = 0;
-
-  for (int i=NOUTPUTS; i--; ) {
-    digitalWrite(outputs[i], aspects[aspect][i]);
-  }
-  aspect = (aspect + 1) % NASPECTS;
-}
 
 void loop() {
   ArduinoOTA.handle();
   webserver.handleClient();
 
-  digitalWrite(D4, !digitalRead(D4));
+  //digitalWrite(D4, !digitalRead(D4));
 
-  step();
-  delay(2000);
+  delay(100);
 }
 
