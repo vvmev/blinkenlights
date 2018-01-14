@@ -14,7 +14,7 @@ static int outputs[] = { D7, D6, D2, D1 };
  * Outputs:
  *   1r  3w  2r
  *   4w
- * 
+ *
  */
 
 #define NASPECTS (sizeof(aspects)/sizeof(*aspects))
@@ -25,7 +25,7 @@ static char aspects[][NOUTPUTS] = {
   { 0, 0, 1, 0}, /* Ke   */
 };
 
-int brightness = 512; // full brightness; any other value PWM
+int brightness = 512; // 0 is full brightness; any other value PWM up to PWMRANGE
 
 int aspect = 0;
 
@@ -80,17 +80,17 @@ void handleRoot() {
   message += "<h2>Weiterschalten</h2><p>";
   message += button("s", autoStep, 0, "Manuell");
   message += button("s", autoStep, 1, "Auto") + "</p>";
-  
+
   message += "<h2>Signalbegriff</h2><p>";
   message += button("a", aspect, 0, "Hp0");
   message += button("a", aspect, 1, "Sh1");
   message += button("a", aspect, 3, "Ke") + "</p>";
-  
+
   message += "<h2>Helligkeit</h2><p>";
   message += button("b", brightness, 256, "33%");
   message += button("b", brightness, 512, "50%");
   message += button("b", brightness, 0, "100%") + "</p>";
-  
+
   message += "<pre>MAC address: " + String(WiFi.macAddress()) + "\n";
   message += "NOUTPUTS = " + String(NOUTPUTS) + "\n";
   message += "NASPECTS = " + String(NASPECTS) + "\n";
@@ -168,7 +168,7 @@ void setup() {
   digitalWrite(D4, 0);
   Serial.begin(115200);
   Serial.println("\n\nBooting");
-  
+
   WiFiManager wifiManager;
   wifiManager.autoConnect();
 
@@ -194,7 +194,7 @@ void setup() {
   });
   set_ota_name();
   ArduinoOTA.begin();
-  
+
   webserver.on("/", handleRoot);
   webserver.on("/m.css", handleCss);
   webserver.on("/set", handleSet);
@@ -203,7 +203,7 @@ void setup() {
   });
   webserver.onNotFound(handleNotFound);
   webserver.begin();
-  
+
   tickStep.attach(10.0, step);
 
   Serial.println("Ready");
@@ -219,4 +219,3 @@ void loop() {
 
   delay(100);
 }
-
