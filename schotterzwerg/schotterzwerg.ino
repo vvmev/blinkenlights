@@ -25,12 +25,31 @@ static char aspects[][NOUTPUTS] = {
   { 0, 0, 1, 0}, /* Ke   */
 };
 
+int brightness = 512; // full brightness; any other value PWM
+
+int aspect = 0;
+
+int autoStep = 1;
+
+
 ESP8266WebServer webserver(80);
 
 static void all_off() {
   for (int i=4; i--; ) {
     pinMode(outputs[i], OUTPUT);
     digitalWrite(outputs[i], 0);
+  }
+}
+
+
+static void setOutputs() {
+  for (int i=NOUTPUTS; i--; ) {
+    if (brightness == 0) {
+      analogWrite(outputs[i], 0);
+      digitalWrite(outputs[i], aspects[aspect][i]);
+    } else {
+      analogWrite(outputs[i], aspects[aspect][i] ? brightness : 0);
+    }
   }
 }
 
@@ -46,12 +65,78 @@ static void set_ota_name() {
   ArduinoOTA.setHostname(buffer);
 }
 
+
+String button(String name, int current, int value, String label) {
+  return "<a href='/set?" + name + "=" + String(value) + "' class='btn" + (current == value ? " act" : "") + "'>" + label + "</a> ";
+}
+
 void handleRoot() {
-  String message = "This is " NAME "\n";
-  message += "MAC address: " + String(WiFi.macAddress()) + "\n";
+  String message = "<html><head><title> " NAME "</title>\n";
+  message += "<link rel='stylesheet' type='text/css' href='m.css'>";
+  message += "<meta name='viewport' content='initial-scale=1.0'>";
+  message += "</head><body>";
+  message += "<h1>" NAME "</h1>";
+
+  message += "<h2>Weiterschalten</h2><p>";
+  message += button("s", autoStep, 0, "Manuell");
+  message += button("s", autoStep, 1, "Auto") + "</p>";
+  
+  message += "<h2>Signalbegriff</h2><p>";
+  message += button("a", aspect, 0, "Hp0");
+  message += button("a", aspect, 1, "Sh1");
+  message += button("a", aspect, 3, "Ke") + "</p>";
+  
+  message += "<h2>Helligkeit</h2><p>";
+  message += button("b", brightness, 256, "33%");
+  message += button("b", brightness, 512, "50%");
+  message += button("b", brightness, 0, "100%") + "</p>";
+  
+  message += "<pre>MAC address: " + String(WiFi.macAddress()) + "\n";
   message += "NOUTPUTS = " + String(NOUTPUTS) + "\n";
   message += "NASPECTS = " + String(NASPECTS) + "\n";
-  webserver.send(200, "text/plain", message);
+  message += "aspect = " + String(aspect) + "\n";
+  message += "brightness = " + String(brightness) + "\n";
+  message += "autoStep = " + String(autoStep) + "\n</pre>";
+
+  message += "</body></html>";
+  webserver.send(200, "text/html", message);
+}
+
+void handleCss() {
+  String message = "";
+  message += "body {font:  10pt 'Arial'; }";
+  message += "h2 {font: bold 12pt; }";
+  message += "a.btn { width: 6em;";
+  message += "background-color: #888; color: white; padding: 10px; text-align: center; text-decoration: none; ";
+  message += "display: inline-block; font: bold 10pt 'Arial'; margin: 4px 2px; cursor: pointer; border-radius: 12px;}";
+  message += "a.act { background-color: #4CAF50; }";
+  webserver.send(200, "text/css", message);
+}
+
+
+void handleSet() {
+  String a;
+  int n;
+  if (webserver.hasArg("a")) {
+    a = webserver.arg("a");
+    n = a.toInt();
+    if (n >= 0 && n < NASPECTS)
+      aspect = n;
+  }
+  if (webserver.hasArg("b")) {
+    a = webserver.arg("b");
+    n = a.toInt();
+    if (n >= 0 && n < PWMRANGE)
+      brightness = n;
+  }
+  if (webserver.hasArg("s")) {
+    a = webserver.arg("s");
+    n = a.toInt();
+    autoStep = n != 0;
+  }
+  setOutputs();
+  webserver.sendHeader("Location", String("/"), true);
+  webserver.send ( 302, "text/plain", "");
 }
 
 void handleNotFound(){
@@ -71,12 +156,9 @@ void handleNotFound(){
 
 
 static void step() {
-  static int aspect = 0;
-
-  for (int i=NOUTPUTS; i--; ) {
-    digitalWrite(outputs[i], aspects[aspect][i]);
-  }
-  aspect = (aspect + 1) % NASPECTS;
+  setOutputs();
+  if (autoStep)
+    aspect = (aspect + 1) % NASPECTS;
 }
 
 
@@ -114,6 +196,8 @@ void setup() {
   ArduinoOTA.begin();
   
   webserver.on("/", handleRoot);
+  webserver.on("/m.css", handleCss);
+  webserver.on("/set", handleSet);
   webserver.on("/inline", [](){
     webserver.send(200, "text/plain", "this works as well");
   });
