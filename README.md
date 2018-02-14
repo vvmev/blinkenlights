@@ -20,3 +20,8 @@ We use XLR five-position connectors: female in the enclosure for the ESP8266, ma
 The Arduino Sketch [cycle-four-outputs](cycle-four-outputs) is a simple test programs that cycles on each of the four outputs in sequence, then turns them off, then starts over.
 
 It also shows how to use [WiFi Manager](https://github.com/tzapu/WiFiManager) and [Arduino OTA](http://esp8266.github.io/Arduino/versions/2.0.0/doc/ota_updates/ota_updates.html).
+
+
+### envmonitor
+
+[envmonitor](envmonitor) shows how to read a DHT22 connected to pin D0 and post the data to MQTT. MQTT broker paramters have to be defined in [envmonitor/secrets.h](envmonitor/secrets.h), which is not checked in. See [envmonitor/secrets.h.example](envmonitor/secrets.h.example) for a sample file.
