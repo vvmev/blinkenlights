@@ -3,8 +3,6 @@
 #include <WiFiManager.h>
 #include <Ticker.h>
 
-Ticker tickStep;
-
 #define NAME "schotterzwerg"
 
 #define NOUTPUTS (sizeof(outputs)/sizeof(*outputs))
@@ -31,6 +29,7 @@ int aspect = 0;
 
 int autoStep = 1;
 
+Ticker stepper, heartbeater;
 
 ESP8266WebServer webserver(80);
 
@@ -162,6 +161,11 @@ static void step() {
 }
 
 
+static void heartbeat() {
+  digitalWrite(D4, !digitalRead(D4));
+}
+
+
 void setup() {
   all_off();
   pinMode(D4, OUTPUT);
@@ -204,7 +208,8 @@ void setup() {
   webserver.onNotFound(handleNotFound);
   webserver.begin();
 
-  tickStep.attach(10.0, step);
+  stepper.attach(10.0, step);
+  heartbeater.attach(0.5, heartbeat);
 
   Serial.println("Ready");
   Serial.println(NASPECTS);
@@ -214,8 +219,4 @@ void setup() {
 void loop() {
   ArduinoOTA.handle();
   webserver.handleClient();
-
-  //digitalWrite(D4, !digitalRead(D4));
-
-  delay(100);
 }
