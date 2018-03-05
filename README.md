@@ -15,6 +15,10 @@ We use XLR five-position connectors: female in the enclosure for the ESP8266, ma
 | 4       | black  | Out 4  | Pin D1  |
 | 5       | brown  | +12V=  | -       |
 
+## PCB
+
+[d1mini-sw](d1mini-sw) contains Eagle files and matching Gerbers for a board compatible with the Wemos D1 Mini. For all seven GPIOs that can be used freely, a BSS138 (or compatible) MOSFET is connected as a low-side switch; the switched outputs are brought out on nine pads with 100mil spacing.  Input voltage for the ESP as well as a Vdd net is brought our on six pads with 100mil spacing.
+
 ## Sample Code
 
 The Arduino Sketch [cycle-four-outputs](cycle-four-outputs) is a simple test programs that cycles on each of the four outputs in sequence, then turns them off, then starts over.
