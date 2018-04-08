@@ -3,7 +3,7 @@
 #include <WiFiManager.h>
 #include <Ticker.h>
 
-#define NAME "Sv-blocksignal"
+#define NAME "sv-blocksignal"
 
 #define NOUTPUTS (sizeof(outputs)/sizeof(*outputs))
 static int outputs[] = { D7, D6, D2, D1 };
@@ -190,6 +190,7 @@ void setup() {
   Serial.begin(115200);
   Serial.println("\n\nBooting");
 
+  wifi_station_set_hostname(NAME);
   WiFiManager wifiManager;
   wifiManager.autoConnect();
 
